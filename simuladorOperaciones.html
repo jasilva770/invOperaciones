@@ -1,0 +1,3006 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Pedagógico de Teoría de la Decisión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --light-bg: #f8fafc;
+            --dark-bg: #1e293b;
+            --text-color: #1e293b;
+            --light-text: #f8fafc;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            margin: 25px 0 15px;
+            font-size: 1.8rem;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: var(--accent-color);
+            margin: 20px 0 10px;
+            font-size: 1.4rem;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .decision-type-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .decision-type-btn {
+            padding: 15px 25px;
+            background-color: #e9ecef;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .decision-type-btn:hover {
+            background-color: #dee2e6;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .decision-type-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .decision-type-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .matrix-table th, .matrix-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .matrix-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .matrix-table .header-cell {
+            background-color: #6c757d;
+            color: white;
+            font-weight: bold;
+        }
+
+        .matrix-table .alt-name-cell {
+            background-color: #e3f2fd;
+            font-weight: 600;
+            text-align: left;
+            padding-left: 15px;
+        }
+
+        .matrix-table .state-name-cell {
+            background-color: #f3e5f5;
+            font-weight: 600;
+            min-width: 150px;
+        }
+
+        .matrix-table input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .matrix-table input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .matrix-table input.error {
+            border-color: var(--danger-color);
+            background-color: #ffebee;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+
+        input, select {
+            padding: 12px 15px;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .results {
+            background-color: #e3f2fd;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 2px solid #bbdefb;
+        }
+
+        .step {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--accent-color);
+            position: relative;
+        }
+
+        .step-title {
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-title i {
+            margin-right: 10px;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .chart-container {
+            height: 400px;
+            margin: 30px 0;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .decision-tree-container {
+            overflow-x: auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            margin: 30px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .decision-tree {
+            min-width: 800px;
+            padding: 20px;
+        }
+
+        .pedagogical-tip {
+            background-color: #fff8e1;
+            border: 2px solid #ffecb3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .pedagogical-tip i {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            margin-right: 15px;
+            min-width: 24px;
+            margin-top: 3px;
+        }
+
+        .formula-box {
+            background-color: #e3f2fd;
+            border: 2px solid #90caf9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            overflow-x: auto;
+        }
+
+        .formula-title {
+            font-weight: bold;
+            color: #1565c0;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .decision-highlight {
+            background-color: #e8f5e8;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .value-highlight {
+            background-color: #e3f2fd;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #1565c0;
+        }
+
+        .probability-highlight {
+            background-color: #f3e5f5;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #7b1fa2;
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 5px;
+            border: 2px solid var(--danger-color);
+            display: none;
+        }
+
+        .success-message {
+            color: var(--success-color);
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-radius: 5px;
+            border: 2px solid var(--success-color);
+            display: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .calculation-step {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .node {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .decision-node {
+            background-color: #e3f2fd;
+            border: 2px solid #2196f3;
+            color: #0d47a1;
+        }
+
+        .chance-node {
+            background-color: #f3e5f5;
+            border: 2px solid #9c27b0;
+            color: #4a148c;
+        }
+
+        .end-node {
+            background-color: #e8f5e8;
+            border: 2px solid #43a047;
+            color: #1b5e20;
+        }
+
+        .arrow {
+            display: inline-block;
+            margin: 0 5px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .tree-row {
+            margin: 15px 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .decision-type-btn {
+                min-width: 150px;
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .step {
+                padding: 20px;
+            }
+            
+            .matrix-table {
+                font-size: 0.9rem;
+            }
+            
+            .matrix-table th, .matrix-table td {
+                padding: 8px 10px;
+            }
+            
+            .tree-row {
+                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .decision-tree {
+                min-width: auto;
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-calculator me-3"></i>Simulador Pedagógico de Teoría de la Decisión</h1>
+        
+        <div class="section">
+            <h2><i class="fas fa-question-circle me-2"></i>¿Qué tipo de decisión estás analizando?</h2>
+            <div class="pedagogical-tip">
+                <i class="fas fa-graduation-cap"></i>
+                <div>
+                    <strong>Recuerda:</strong> La teoría de la decisión se clasifica según el conocimiento que tienes sobre los posibles resultados. 
+                    En <span class="decision-highlight">certidumbre</span> conoces el resultado exacto, en <span class="decision-highlight">riesgo</span> conoces las probabilidades, 
+                    y en <span class="decision-highlight">incertidumbre</span> no conoces las probabilidades.
+                </div>
+            </div>
+            
+            <div class="decision-type-selector">
+                <button class="decision-type-btn" data-type="certidumbre">
+                    <i class="fas fa-check-circle"></i>
+                    Certidumbre
+                    <small>Conozco el resultado exacto</small>
+                </button>
+                <button class="decision-type-btn" data-type="riesgo-ve">
+                    <i class="fas fa-chart-line"></i>
+                    Riesgo (VE)
+                    <small>Conozco las probabilidades</small>
+                </button>
+                <button class="decision-type-btn" data-type="riesgo-sin-exp">
+                    <i class="fas fa-dice"></i>
+                    Riesgo sin Experimentación
+                    <small>Análisis de riesgo básico</small>
+                </button>
+                <button class="decision-type-btn" data-type="riesgo-con-exp">
+                    <i class="fas fa-flask"></i>
+                    Riesgo con Experimentación
+                    <small>Con información adicional</small>
+                </button>
+                <button class="decision-type-btn" data-type="incertidumbre">
+                    <i class="fas fa-question"></i>
+                    Incertidumbre
+                    <small>No conozco probabilidades</small>
+                </button>
+            </div>
+        </div>
+
+        <div id="config-section" class="section hidden animate-fade-in">
+            <h2><i class="fas fa-cogs me-2"></i>Configuración de tu Problema de Decisión</h2>
+            <div class="pedagogical-tip">
+                <i class="fas fa-graduation-cap"></i>
+                <div>
+                    <strong>Definamos tu problema:</strong> Necesitamos saber cuántas <span class="decision-highlight">alternativas</span> tienes para elegir 
+                    y cuántos <span class="decision-highlight">estados de la naturaleza</span> pueden ocurrir. Esto nos permitirá construir la matriz de decisión.
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <label for="alternatives-count"><i class="fas fa-list me-2"></i>Número de Alternativas:</label>
+                        <input type="number" id="alternatives-count" min="2" max="6" value="3" class="form-control">
+                        <small class="form-text text-muted">¿Cuántas opciones tienes para elegir? (Mínimo 2, máximo 6 para mejor visualización)</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <label for="states-count"><i class="fas fa-layer-group me-2"></i>Número de Estados de la Naturaleza:</label>
+                        <input type="number" id="states-count" min="2" max="6" value="3" class="form-control">
+                        <small class="form-text text-muted">¿Cuántos posibles escenarios pueden ocurrir? (Mínimo 2, máximo 6 para mejor visualización)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button id="generate-config-btn" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus-circle me-2"></i>Configurar Descripciones
+                </button>
+            </div>
+        </div>
+
+        <div id="description-section" class="section hidden animate-fade-in">
+            <h2><i class="fas fa-edit me-2"></i>Describe tus Alternativas y Estados</h2>
+            <div class="pedagogical-tip">
+                <i class="fas fa-graduation-cap"></i>
+                <div>
+                    <strong>Personaliza tu matriz:</strong> Dale nombres significativos a tus alternativas y estados. 
+                    Esto te ayudará a entender mejor los resultados y a tomar decisiones más informadas.
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h3><i class="fas fa-tasks me-2"></i>Descripción de Alternativas</h3>
+                    <div id="alternatives-description"></div>
+                </div>
+                <div class="col-md-6">
+                    <h3><i class="fas fa-globe-americas me-2"></i>Descripción de Estados de la Naturaleza</h3>
+                    <div id="states-description"></div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button id="generate-matrix-btn" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-table me-2"></i>Generar Matriz de Recompensa
+                </button>
+            </div>
+        </div>
+
+        <div id="matrix-section" class="section hidden animate-fade-in">
+            <h2><i class="fas fa-table me-2"></i>Matriz de Recompensa</h2>
+            <div class="pedagogical-tip">
+                <i class="fas fa-graduation-cap"></i>
+                <div>
+                    <strong>Completa la matriz:</strong> En cada celda, ingresa el valor (recompensa, utilidad o resultado) que obtendrías 
+                    si eliges una <span class="decision-highlight">alternativa</span> específica y ocurre un <span class="decision-highlight">estado de la naturaleza</span> particular.
+                </div>
+            </div>
+            
+            <div id="matrix-error" class="error-message">
+                <i class="fas fa-exclamation-triangle me-2"></i>Por favor, completa todos los valores de la matriz antes de continuar.
+            </div>
+            
+            <div class="table-responsive">
+                <table id="decision-matrix" class="matrix-table"></table>
+            </div>
+            
+            <div id="probabilities-section" class="mt-4 hidden">
+                <h3><i class="fas fa-percentage me-2"></i>Probabilidades de los Estados de la Naturaleza</h3>
+                <div class="pedagogical-tip">
+                    <i class="fas fa-graduation-cap"></i>
+                    <div>
+                        <strong>Asigna probabilidades:</strong> En situaciones de riesgo, debes asignar la probabilidad de ocurrencia 
+                        a cada estado de la naturaleza. Recuerda que la suma debe ser igual a 1 (o 100%).
+                    </div>
+                </div>
+                <div id="probabilities-container"></div>
+                <div id="probabilities-error" class="error-message">
+                    <i class="fas fa-exclamation-triangle me-2"></i>La suma de probabilidades debe ser exactamente 1.0
+                </div>
+            </div>
+            
+            <div id="experimentation-section" class="mt-4 hidden">
+                <h3><i class="fas fa-flask me-2"></i>Probabilidades con Experimentación (Riesgo B)</h3>
+                <div class="pedagogical-tip">
+                    <i class="fas fa-graduation-cap"></i>
+                    <div>
+                        <strong>Probabilidades condicionales:</strong> Aquí debes ingresar la probabilidad de cada estado de la naturaleza 
+                        <span class="decision-highlight">dado que</span> has elegido una alternativa específica (P(Estado|Alternativa)).
+                    </div>
+                </div>
+                <div id="experimentation-container"></div>
+                <div id="experimentation-error" class="error-message">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Para cada alternativa, la suma de probabilidades debe ser 1.0
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button id="calculate-btn" class="btn btn-info btn-lg">
+                    <i class="fas fa-play-circle me-2"></i>Calcular Solución Paso a Paso
+                </button>
+                <button id="reset-btn" class="btn btn-danger btn-lg">
+                    <i class="fas fa-redo me-2"></i>Reiniciar
+                </button>
+            </div>
+        </div>
+
+        <div id="results-section" class="section hidden animate-fade-in">
+            <h2><i class="fas fa-clipboard-list me-2"></i>Resultados y Explicación Pedagógica Paso a Paso</h2>
+            <div class="pedagogical-tip">
+                <i class="fas fa-graduation-cap"></i>
+                <div>
+                    <strong>Aprende mientras resuelves:</strong> Te guiaremos a través de cada paso del proceso de decisión, 
+                    explicando los conceptos y mostrando cómo se aplican a tu problema específico.
+                </div>
+            </div>
+            
+            <div id="results-container"></div>
+            
+            <div id="decision-tree-section" class="section hidden">
+                <h3><i class="fas fa-sitemap me-2"></i>Árbol de Decisión</h3>
+                <div class="pedagogical-tip">
+                    <i class="fas fa-graduation-cap"></i>
+                    <div>
+                        <strong>Visualización gráfica:</strong> El árbol de decisión te muestra gráficamente el proceso de toma de decisiones, 
+                        con nodos de decisión, nodos de probabilidad y resultados finales.
+                    </div>
+                </div>
+                <div class="decision-tree-container">
+                    <div id="decision-tree" class="decision-tree"></div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="results-chart"></canvas>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button id="new-analysis-btn" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Nuevo Análisis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables globales
+            const state = {
+                currentDecisionType: '',
+                chart: null,
+                alternativesCount: 3,
+                statesCount: 3,
+                matrixValues: [],
+                alternativesNames: [],
+                statesNames: [],
+                probabilities: [],
+                experimentationProbs: []
+            };
+            
+            // Inicializar arrays
+            for (let i = 0; i < 6; i++) {
+                state.alternativesNames[i] = `Alternativa ${i + 1}`;
+                state.statesNames[i] = `Estado ${i + 1}`;
+            }
+
+            // Seleccionar tipo de decisión
+            const setupDecisionTypeSelection = () => {
+                const decisionTypeButtons = document.querySelectorAll('.decision-type-btn');
+                decisionTypeButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        decisionTypeButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        state.currentDecisionType = this.getAttribute('data-type');
+                        
+                        document.getElementById('config-section').classList.remove('hidden');
+                        document.getElementById('description-section').classList.add('hidden');
+                        document.getElementById('matrix-section').classList.add('hidden');
+                        document.getElementById('results-section').classList.add('hidden');
+                        
+                        // Mostrar/Ocultar secciones según el tipo de decisión
+                        const probabilitiesSection = document.getElementById('probabilities-section');
+                        const experimentationSection = document.getElementById('experimentation-section');
+                        
+                        if (state.currentDecisionType.includes('riesgo')) {
+                            probabilitiesSection.classList.remove('hidden');
+                            if (state.currentDecisionType === 'riesgo-con-exp') {
+                                experimentationSection.classList.remove('hidden');
+                            } else {
+                                experimentationSection.classList.add('hidden');
+                            }
+                        } else {
+                            probabilitiesSection.classList.add('hidden');
+                            experimentationSection.classList.add('hidden');
+                        }
+                    });
+                });
+            };
+
+            // Configurar descripciones
+            const setupConfigButton = () => {
+                document.getElementById('generate-config-btn').addEventListener('click', function() {
+                    state.alternativesCount = parseInt(document.getElementById('alternatives-count').value);
+                    state.statesCount = parseInt(document.getElementById('states-count').value);
+                    
+                    if (state.alternativesCount < 2 || state.alternativesCount > 6) {
+                        alert('El número de alternativas debe estar entre 2 y 6 para una mejor visualización');
+                        return;
+                    }
+                    
+                    if (state.statesCount < 2 || state.statesCount > 6) {
+                        alert('El número de estados debe estar entre 2 y 6 para una mejor visualización');
+                        return;
+                    }
+                    
+                    generateDescriptions();
+                    document.getElementById('description-section').classList.remove('hidden');
+                    document.getElementById('config-section').classList.add('hidden');
+                });
+            };
+
+            // Generar matriz
+            const setupMatrixButton = () => {
+                document.getElementById('generate-matrix-btn').addEventListener('click', function() {
+                    // Validar que las descripciones no estén vacías
+                    let valid = true;
+                    for (let i = 0; i < state.alternativesCount; i++) {
+                        const input = document.getElementById(`alt-name-${i}`);
+                        if (!input.value.trim()) {
+                            input.classList.add('error');
+                            valid = false;
+                        } else {
+                            input.classList.remove('error');
+                            state.alternativesNames[i] = input.value.trim();
+                        }
+                    }
+                    
+                    for (let j = 0; j < state.statesCount; j++) {
+                        const input = document.getElementById(`state-name-${j}`);
+                        if (!input.value.trim()) {
+                            input.classList.add('error');
+                            valid = false;
+                        } else {
+                            input.classList.remove('error');
+                            state.statesNames[j] = input.value.trim();
+                        }
+                    }
+                    
+                    if (!valid) {
+                        alert('Por favor, completa todas las descripciones antes de continuar');
+                        return;
+                    }
+                    
+                    generateMatrix();
+                    document.getElementById('matrix-section').classList.remove('hidden');
+                    document.getElementById('description-section').classList.add('hidden');
+                });
+            };
+
+            // Calcular solución
+            const setupCalculateButton = () => {
+                document.getElementById('calculate-btn').addEventListener('click', function() {
+                    if (!validateMatrix()) return;
+                    if (state.currentDecisionType.includes('riesgo') && !validateProbabilities()) return;
+                    if (state.currentDecisionType === 'riesgo-con-exp' && !validateExperimentationProbs()) return;
+                    
+                    calculateSolution();
+                    document.getElementById('results-section').classList.remove('hidden');
+                    document.getElementById('matrix-section').classList.add('hidden');
+                });
+            };
+
+            // Reiniciar
+            const setupResetButton = () => {
+                document.getElementById('reset-btn').addEventListener('click', function() {
+                    location.reload();
+                });
+            };
+            
+            // Nuevo análisis
+            const setupNewAnalysisButton = () => {
+                document.getElementById('new-analysis-btn').addEventListener('click', function() {
+                    document.getElementById('results-section').classList.add('hidden');
+                    document.getElementById('matrix-section').classList.remove('hidden');
+                });
+            };
+
+            // Generar descripciones
+            function generateDescriptions() {
+                const altContainer = document.getElementById('alternatives-description');
+                const stateContainer = document.getElementById('states-description');
+                
+                altContainer.innerHTML = '';
+                stateContainer.innerHTML = '';
+                
+                // Generar inputs para nombres de alternativas
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'input-group mb-3';
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `alt-name-${i}`;
+                    label.innerHTML = `<i class="fas fa-tasks me-2"></i>Alternativa ${i + 1}:`;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `alt-name-${i}`;
+                    input.className = 'form-control';
+                    input.placeholder = `Describe la alternativa ${i + 1}`;
+                    input.value = state.alternativesNames[i];
+                    
+                    div.appendChild(label);
+                    div.appendChild(input);
+                    altContainer.appendChild(div);
+                }
+                
+                // Generar inputs para nombres de estados
+                for (let j = 0; j < state.statesCount; j++) {
+                    const div = document.createElement('div');
+                    div.className = 'input-group mb-3';
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `state-name-${j}`;
+                    label.innerHTML = `<i class="fas fa-globe-americas me-2"></i>Estado ${j + 1}:`;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `state-name-${j}`;
+                    input.className = 'form-control';
+                    input.placeholder = `Describe el estado ${j + 1}`;
+                    input.value = state.statesNames[j];
+                    
+                    div.appendChild(label);
+                    div.appendChild(input);
+                    stateContainer.appendChild(div);
+                }
+            }
+
+            // Generar la matriz de recompensa
+            function generateMatrix() {
+                const matrixTable = document.getElementById('decision-matrix');
+                matrixTable.innerHTML = '';
+                
+                // Crear encabezado
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                
+                // Celda vacía para la esquina superior izquierda
+                const emptyCell = document.createElement('th');
+                emptyCell.className = 'header-cell';
+                emptyCell.textContent = 'Alternativas / Estados';
+                headerRow.appendChild(emptyCell);
+                
+                // Encabezados de estados
+                for (let j = 0; j < state.statesCount; j++) {
+                    const stateHeader = document.createElement('th');
+                    stateHeader.className = 'state-name-cell';
+                    stateHeader.textContent = state.statesNames[j];
+                    stateHeader.title = state.statesNames[j];
+                    headerRow.appendChild(stateHeader);
+                }
+                
+                thead.appendChild(headerRow);
+                matrixTable.appendChild(thead);
+                
+                // Crear cuerpo de la tabla
+                const tbody = document.createElement('tbody');
+                
+                // Inicializar matriz de valores
+                state.matrixValues = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    state.matrixValues[i] = [];
+                    for (let j = 0; j < state.statesCount; j++) {
+                        state.matrixValues[i][j] = 0;
+                    }
+                }
+                
+                // Crear filas para cada alternativa
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const row = document.createElement('tr');
+                    
+                    // Etiqueta de alternativa
+                    const altLabel = document.createElement('td');
+                    altLabel.className = 'alt-name-cell';
+                    altLabel.textContent = state.alternativesNames[i];
+                    altLabel.title = state.alternativesNames[i];
+                    row.appendChild(altLabel);
+                    
+                    // Celdas de valores
+                    for (let j = 0; j < state.statesCount; j++) {
+                        const cell = document.createElement('td');
+                        
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.step = '0.01';
+                        input.className = 'matrix-input';
+                        input.dataset.row = i;
+                        input.dataset.col = j;
+                        input.placeholder = '0';
+                        input.value = '0';
+                        
+                        // Agregar event listener para validación en tiempo real
+                        input.addEventListener('input', function() {
+                            const row = parseInt(this.dataset.row);
+                            const col = parseInt(this.dataset.col);
+                            const value = parseFloat(this.value);
+                            
+                            if (isNaN(value)) {
+                                this.classList.add('error');
+                                state.matrixValues[row][col] = 0;
+                            } else {
+                                this.classList.remove('error');
+                                state.matrixValues[row][col] = value;
+                            }
+                        });
+                        
+                        cell.appendChild(input);
+                        row.appendChild(cell);
+                    }
+                    
+                    tbody.appendChild(row);
+                }
+                
+                matrixTable.appendChild(tbody);
+                
+                // Generar sección de probabilidades si es necesario
+                if (state.currentDecisionType.includes('riesgo')) {
+                    generateProbabilities();
+                }
+                
+                // Generar sección de experimentación si es necesario
+                if (state.currentDecisionType === 'riesgo-con-exp') {
+                    generateExperimentationProbs();
+                }
+            }
+
+            // Generar sección de probabilidades
+            function generateProbabilities() {
+                const container = document.getElementById('probabilities-container');
+                container.innerHTML = '';
+                
+                state.probabilities = [];
+                
+                const row = document.createElement('div');
+                row.className = 'row';
+                
+                for (let j = 0; j < state.statesCount; j++) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 col-sm-6 mb-3';
+                    
+                    const probGroup = document.createElement('div');
+                    probGroup.className = 'input-group';
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `prob-${j}`;
+                    label.className = 'form-label';
+                    label.innerHTML = `<i class="fas fa-percentage me-1"></i>P(${state.statesNames[j]}):`;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = '0.01';
+                    input.min = '0';
+                    input.max = '1';
+                    input.id = `prob-${j}`;
+                    input.className = 'form-control probability-input';
+                    input.dataset.index = j;
+                    input.value = (1 / state.statesCount).toFixed(2);
+                    
+                    probGroup.appendChild(label);
+                    probGroup.appendChild(input);
+                    col.appendChild(probGroup);
+                    row.appendChild(col);
+                    
+                    state.probabilities.push(parseFloat(input.value));
+                    
+                    // Event listener para actualizar probabilidades
+                    input.addEventListener('input', function() {
+                        const index = parseInt(this.dataset.index);
+                        const value = parseFloat(this.value);
+                        
+                        if (isNaN(value) || value < 0 || value > 1) {
+                            this.classList.add('error');
+                            state.probabilities[index] = 0;
+                        } else {
+                            this.classList.remove('error');
+                            state.probabilities[index] = value;
+                        }
+                        
+                        validateProbabilities();
+                    });
+                }
+                
+                container.appendChild(row);
+            }
+
+            // Generar sección de experimentación
+            function generateExperimentationProbs() {
+                const container = document.getElementById('experimentation-container');
+                container.innerHTML = '';
+                
+                state.experimentationProbs = [];
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const card = document.createElement('div');
+                    card.className = 'card mb-4';
+                    
+                    const cardHeader = document.createElement('div');
+                    cardHeader.className = 'card-header bg-info text-white';
+                    cardHeader.innerHTML = `<i class="fas fa-flask me-2"></i>Probabilidades condicionales dado: <strong>${state.alternativesNames[i]}</strong>`;
+                    card.appendChild(cardHeader);
+                    
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body';
+                    
+                    const row = document.createElement('div');
+                    row.className = 'row';
+                    
+                    const altProbs = [];
+                    for (let j = 0; j < state.statesCount; j++) {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-4 col-sm-6 mb-3';
+                        
+                        const probGroup = document.createElement('div');
+                        probGroup.className = 'input-group';
+                        
+                        const label = document.createElement('label');
+                        label.htmlFor = `exp-prob-${i}-${j}`;
+                        label.className = 'form-label';
+                        label.innerHTML = `<i class="fas fa-project-diagram me-1"></i>P(${state.statesNames[j]} | ${state.alternativesNames[i]}):`;
+                        
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.step = '0.01';
+                        input.min = '0';
+                        input.max = '1';
+                        input.id = `exp-prob-${i}-${j}`;
+                        input.className = 'form-control exp-prob-input';
+                        input.dataset.alt = i;
+                        input.dataset.state = j;
+                        input.value = (1 / state.statesCount).toFixed(2);
+                        
+                        probGroup.appendChild(label);
+                        probGroup.appendChild(input);
+                        col.appendChild(probGroup);
+                        row.appendChild(col);
+                        
+                        altProbs.push(parseFloat(input.value));
+                        
+                        // Event listener para actualizar probabilidades
+                        input.addEventListener('input', function() {
+                            const altIndex = parseInt(this.dataset.alt);
+                            const stateIndex = parseInt(this.dataset.state);
+                            const value = parseFloat(this.value);
+                            
+                            if (isNaN(value) || value < 0 || value > 1) {
+                                this.classList.add('error');
+                                if (!state.experimentationProbs[altIndex]) {
+                                    state.experimentationProbs[altIndex] = [];
+                                }
+                                state.experimentationProbs[altIndex][stateIndex] = 0;
+                            } else {
+                                this.classList.remove('error');
+                                if (!state.experimentationProbs[altIndex]) {
+                                    state.experimentationProbs[altIndex] = [];
+                                }
+                                state.experimentationProbs[altIndex][stateIndex] = value;
+                            }
+                            
+                            validateExperimentationProbs();
+                        });
+                    }
+                    
+                    state.experimentationProbs.push(altProbs);
+                    cardBody.appendChild(row);
+                    card.appendChild(cardBody);
+                    container.appendChild(card);
+                }
+            }
+
+            // Validar matriz
+            function validateMatrix() {
+                const errorDiv = document.getElementById('matrix-error');
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    for (let j = 0; j < state.statesCount; j++) {
+                        if (isNaN(state.matrixValues[i][j]) || state.matrixValues[i][j] === null || state.matrixValues[i][j] === undefined) {
+                            errorDiv.style.display = 'block';
+                            return false;
+                        }
+                    }
+                }
+                
+                errorDiv.style.display = 'none';
+                return true;
+            }
+
+            // Validar probabilidades
+            function validateProbabilities() {
+                const errorDiv = document.getElementById('probabilities-error');
+                const sum = state.probabilities.reduce((acc, prob) => acc + prob, 0);
+                
+                if (Math.abs(sum - 1) > 0.01) {
+                    errorDiv.style.display = 'block';
+                    return false;
+                } else {
+                    errorDiv.style.display = 'none';
+                    return true;
+                }
+            }
+
+            // Validar probabilidades de experimentación
+            function validateExperimentationProbs() {
+                const errorDiv = document.getElementById('experimentation-error');
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const altSum = state.experimentationProbs[i].reduce((acc, prob) => acc + prob, 0);
+                    if (Math.abs(altSum - 1) > 0.01) {
+                        errorDiv.style.display = 'block';
+                        return false;
+                    }
+                }
+                
+                errorDiv.style.display = 'none';
+                return true;
+            }
+
+            // Calcular la solución según el tipo de decisión
+            function calculateSolution() {
+                const resultsContainer = document.getElementById('results-container');
+                resultsContainer.innerHTML = '';
+                
+                // Ocultar sección de árbol de decisión inicialmente
+                document.getElementById('decision-tree-section').classList.add('hidden');
+                
+                let results = null;
+                
+                switch(state.currentDecisionType) {
+                    case 'certidumbre':
+                        results = solveCertainty();
+                        break;
+                    case 'riesgo-ve':
+                        results = solveRiskVE();
+                        break;
+                    case 'riesgo-sin-exp':
+                        results = solveRiskWithoutExp();
+                        break;
+                    case 'riesgo-con-exp':
+                        results = solveRiskWithExp();
+                        break;
+                    case 'incertidumbre':
+                        results = solveUncertainty();
+                        break;
+                    default:
+                        resultsContainer.innerHTML = '<div class="alert alert-danger">Tipo de decisión no válido</div>';
+                        return;
+                }
+                
+                // Mostrar resultados con explicación pedagógica
+                displayPedagogicalResults(results);
+                
+                // Generar gráfico
+                generateChart(results);
+                
+                // Generar árbol de decisión para casos de riesgo
+                if (state.currentDecisionType.includes('riesgo')) {
+                    generateDecisionTree(results);
+                    document.getElementById('decision-tree-section').classList.remove('hidden');
+                }
+            }
+
+            // Resolver para certidumbre
+            function solveCertainty() {
+                const steps = [];
+                
+                // Paso 1: Presentar el problema
+                steps.push({
+                    title: "Paso 1: Entendiendo el problema de certidumbre",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto clave:</strong> En condiciones de <span class="decision-highlight">certidumbre</span>, 
+                            sabemos con exactitud qué estado de la naturaleza ocurrirá. Por lo tanto, simplemente seleccionamos 
+                            la alternativa que nos da el mejor resultado para ese estado específico.
+                        </div>
+                    </div>
+                    <p><strong>Nuestra matriz de decisión es:</strong></p>
+                    ${formatMatrixWithNames()}`
+                });
+                
+                // Paso 2: Mostrar análisis para cada estado
+                steps.push({
+                    title: "Paso 2: Análisis por cada estado de la naturaleza",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Método:</strong> Para cada estado, identificamos la alternativa que proporciona el valor máximo.
+                        </div>
+                    </div>
+                    ${analyzeByState()}`
+                });
+                
+                // Paso 3: Conclusión
+                steps.push({
+                    title: "Paso 3: Conclusión y recomendación",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Aplicación práctica:</strong> En la vida real, la certidumbre es rara. Pero cuando la tenemos, 
+                            la decisión es sencilla: ¡elige lo mejor para la situación que sabes que ocurrirá!
+                        </div>
+                    </div>
+                    <p><strong>Resumen de decisiones óptimas:</strong></p>
+                    ${summaryByState()}
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Recomendación final:</strong> Si sabes que ocurrirá un estado específico, elige la alternativa correspondiente de la tabla anterior.
+                    </div>`
+                });
+                
+                // Preparar datos para el gráfico
+                const bestValues = [];
+                for (let j = 0; j < state.statesCount; j++) {
+                    let bestValue = state.matrixValues[0][j];
+                    for (let i = 1; i < state.alternativesCount; i++) {
+                        if (state.matrixValues[i][j] > bestValue) {
+                            bestValue = state.matrixValues[i][j];
+                        }
+                    }
+                    bestValues.push(bestValue);
+                }
+                
+                return {
+                    type: "Certidumbre",
+                    steps: steps,
+                    chartData: bestValues,
+                    chartLabels: state.statesNames.slice(0, state.statesCount)
+                };
+            }
+
+            // Resolver para riesgo con Valor Esperado (VE)
+            function solveRiskVE() {
+                const steps = [];
+                
+                // Paso 1: Presentar el concepto
+                steps.push({
+                    title: "Paso 1: Entendiendo la toma de decisiones bajo riesgo",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto clave:</strong> En condiciones de <span class="decision-highlight">riesgo</span>, 
+                            no sabemos con certeza qué estado ocurrirá, pero conocemos las <span class="probability-highlight">probabilidades</span> 
+                            de ocurrencia de cada estado. Utilizamos el <span class="value-highlight">Valor Esperado (VE)</span> 
+                            para tomar decisiones racionales.
+                        </div>
+                    </div>
+                    <p><strong>La fórmula del Valor Esperado es:</strong></p>
+                    <div class="formula-box">
+                        <div class="formula-title">Fórmula del Valor Esperado</div>
+                        VE(Alternativa i) = Σ [P(Estado j) × Recompensa(Alternativa i, Estado j)]
+                    </div>
+                    <p><strong>Nuestra matriz de decisión con probabilidades es:</strong></p>
+                    ${formatMatrixWithNames()}
+                    <p><strong>Probabilidades asignadas:</strong></p>
+                    ${formatProbabilitiesWithNames()}`
+                });
+                
+                // Paso 2: Calcular valores esperados
+                const expectedValues = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    let ev = 0;
+                    let calculation = "";
+                    for (let j = 0; j < state.statesCount; j++) {
+                        ev += state.matrixValues[i][j] * state.probabilities[j];
+                        if (j > 0) calculation += " + ";
+                        calculation += `${state.probabilities[j].toFixed(4)} × ${state.matrixValues[i][j].toFixed(2)}`;
+                    }
+                    expectedValues.push({
+                        value: ev,
+                        calculation: calculation,
+                        fullCalculation: `${ev.toFixed(4)} = ${calculation}`
+                    });
+                }
+                
+                steps.push({
+                    title: "Paso 2: Cálculo del Valor Esperado para cada alternativa",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Proceso de cálculo:</strong> Multiplicamos cada recompensa por su probabilidad correspondiente 
+                            y sumamos todos los productos para obtener el Valor Esperado de cada alternativa.
+                        </div>
+                    </div>
+                    ${calculateExpectedValuesWithExplanation(expectedValues)}`
+                });
+                
+                // Paso 3: Seleccionar la mejor alternativa
+                let bestEV = expectedValues[0].value;
+                let bestAlternative = 0;
+                
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (expectedValues[i].value > bestEV) {
+                        bestEV = expectedValues[i].value;
+                        bestAlternative = i;
+                    }
+                }
+                
+                steps.push({
+                    title: "Paso 3: Selección de la alternativa óptima",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Principio de decisión:</strong> Elegimos la alternativa con el <span class="value-highlight">mayor Valor Esperado</span>, 
+                            ya que representa la mejor recompensa promedio a largo plazo.
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Alternativa</th>
+                                    <th>Valor Esperado</th>
+                                    <th>¿Óptima?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${expectedValues.map((ev, i) => `
+                                    <tr ${i === bestAlternative ? 'class="table-success"' : ''}>
+                                        <td><strong>${state.alternativesNames[i]}</strong></td>
+                                        <td class="value-highlight">${ev.value.toFixed(4)}</td>
+                                        <td>${i === bestAlternative ? '<i class="fas fa-check-circle text-success"></i> SÍ' : '<i class="fas fa-times-circle text-danger"></i> NO'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-trophy me-2"></i>
+                        <strong>¡Decisión óptima!</strong> La alternativa <span class="decision-highlight">${state.alternativesNames[bestAlternative]}</span> 
+                        tiene el mayor Valor Esperado (${bestEV.toFixed(4)}) y es, por lo tanto, la elección racional bajo riesgo.
+                    </div>`
+                });
+                
+                // Paso 4: Interpretación
+                steps.push({
+                    title: "Paso 4: Interpretación y limitaciones",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Reflexión crítica:</strong> El Valor Esperado asume que somos <span class="decision-highlight">neutrales al riesgo</span> 
+                            y que tomamos decisiones basadas únicamente en el promedio a largo plazo. En la realidad, las personas a menudo 
+                            son <span class="decision-highlight">aversas al riesgo</span> o <span class="decision-highlight">amantes del riesgo</span>.
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Consejo práctico:</strong> Aunque el VE es una herramienta poderosa, considera también tu tolerancia personal al riesgo. 
+                        ¿Estás cómodo con la variabilidad de resultados que conlleva tu alternativa óptima?
+                    </div>`
+                });
+                
+                return {
+                    type: "Riesgo (VE)",
+                    steps: steps,
+                    finalDecision: {
+                        alternative: bestAlternative + 1,
+                        alternativeName: state.alternativesNames[bestAlternative],
+                        value: bestEV
+                    },
+                    chartData: expectedValues.map(ev => ev.value),
+                    chartLabels: state.alternativesNames.slice(0, state.alternativesCount),
+                    expectedValues: expectedValues,
+                    bestAlternative: bestAlternative
+                };
+            }
+
+            // Resolver para riesgo sin experimentación
+            function solveRiskWithoutExp() {
+                const steps = [];
+                
+                // Paso 1: Presentar el concepto
+                steps.push({
+                    title: "Paso 1: Análisis de riesgo más completo",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto clave:</strong> Además del Valor Esperado, podemos analizar el <span class="decision-highlight">riesgo</span> 
+                            asociado a cada alternativa mediante la <span class="value-highlight">desviación estándar</span>. 
+                            Esto nos permite considerar no solo el rendimiento promedio, sino también la <span class="decision-highlight">variabilidad</span> de los resultados.
+                        </div>
+                    </div>
+                    <p><strong>Recordemos nuestra matriz de decisión y probabilidades:</strong></p>
+                    ${formatMatrixWithNames()}
+                    <p><strong>Probabilidades:</strong></p>
+                    ${formatProbabilitiesWithNames()}`
+                });
+                
+                // Paso 2: Calcular valores esperados
+                const expectedValues = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    let ev = 0;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        ev += state.matrixValues[i][j] * state.probabilities[j];
+                    }
+                    expectedValues.push(ev);
+                }
+                
+                // Paso 3: Calcular desviaciones estándar
+                const stdDeviations = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    let variance = 0;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        variance += state.probabilities[j] * Math.pow(state.matrixValues[i][j] - expectedValues[i], 2);
+                    }
+                    stdDeviations.push(Math.sqrt(variance));
+                }
+                
+                steps.push({
+                    title: "Paso 2: Cálculo del Valor Esperado y la Desviación Estándar",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Fórmulas:</strong><br>
+                            <div class="formula-box">
+                                <div class="formula-title">Valor Esperado</div>
+                                VE = Σ [P(Estado j) × Recompensa(Alternativa i, Estado j)]
+                            </div>
+                            <div class="formula-box">
+                                <div class="formula-title">Varianza</div>
+                                Var = Σ [P(Estado j) × (Recompensa(Alternativa i, Estado j) - VE)²]
+                            </div>
+                            <div class="formula-box">
+                                <div class="formula-title">Desviación Estándar</div>
+                                σ = √Var
+                            </div>
+                            <br>
+                            La desviación estándar mide qué tan dispersos están los resultados alrededor del valor esperado. 
+                            <span class="decision-highlight">Mayor desviación = mayor riesgo</span>.
+                        </div>
+                    </div>
+                    ${calculateEVAndStd(expectedValues, stdDeviations)}`
+                });
+                
+                // Paso 4: Calcular coeficiente de variación
+                const coefficientsOfVariation = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    coefficientsOfVariation.push(stdDeviations[i] / expectedValues[i] || 0);
+                }
+                
+                steps.push({
+                    title: "Paso 3: Análisis de eficiencia riesgo-rendimiento",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto clave:</strong> El <span class="value-highlight">Coeficiente de Variación (CV)</span> 
+                            nos permite comparar el riesgo relativo de alternativas con diferentes valores esperados.<br>
+                            <div class="formula-box">
+                                <div class="formula-title">Coeficiente de Variación</div>
+                                CV = Desviación Estándar / Valor Esperado
+                            </div>
+                            <br>
+                            Un CV más bajo indica una mejor relación riesgo-rendimiento.
+                        </div>
+                    </div>
+                    ${calculateCoefficientOfVariation(expectedValues, stdDeviations, coefficientsOfVariation)}`
+                });
+                
+                // Paso 5: Seleccionar la mejor alternativa
+                let bestCV = coefficientsOfVariation[0];
+                let bestAlternative = 0;
+                
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (coefficientsOfVariation[i] < bestCV) {
+                        bestCV = coefficientsOfVariation[i];
+                        bestAlternative = i;
+                    }
+                }
+                
+                steps.push({
+                    title: "Paso 4: Selección de la alternativa óptima considerando riesgo",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Principio de decisión:</strong> Elegimos la alternativa con el <span class="value-highlight">menor Coeficiente de Variación</span>, 
+                            ya que ofrece el mejor equilibrio entre rendimiento esperado y riesgo asumido.
+                        </div>
+                    </div>
+                    <div class="alert alert-success">
+                        <i class="fas fa-balance-scale me-2"></i>
+                        <strong>Decisión óptima:</strong> La alternativa <span class="decision-highlight">${state.alternativesNames[bestAlternative]}</span> 
+                        es la mejor opción con un Coeficiente de Variación de ${bestCV.toFixed(4)}.<br>
+                        <strong>Valor Esperado:</strong> ${expectedValues[bestAlternative].toFixed(4)}<br>
+                        <strong>Desviación Estándar:</strong> ${stdDeviations[bestAlternative].toFixed(4)}
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Consideración adicional:</strong> Si eres <span class="decision-highlight">avaro al riesgo</span>, 
+                        esta es claramente tu mejor opción. Si eres <span class="decision-highlight">amante del riesgo</span>, 
+                        podrías considerar alternativas con mayor VE aunque tengan mayor CV.
+                    </div>`
+                });
+                
+                return {
+                    type: "Riesgo sin Experimentación",
+                    steps: steps,
+                    finalDecision: {
+                        alternative: bestAlternative + 1,
+                        alternativeName: state.alternativesNames[bestAlternative],
+                        ev: expectedValues[bestAlternative],
+                        std: stdDeviations[bestAlternative],
+                        cv: bestCV
+                    },
+                    chartData: expectedValues,
+                    chartLabels: state.alternativesNames.slice(0, state.alternativesCount),
+                    expectedValues: expectedValues,
+                    stdDeviations: stdDeviations,
+                    bestAlternative: bestAlternative
+                };
+            }
+
+            // Resolver para riesgo con experimentación
+            function solveRiskWithExp() {
+                const steps = [];
+                
+                // Paso 1: Presentar el concepto
+                steps.push({
+                    title: "Paso 1: Toma de decisiones con información adicional",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto clave:</strong> A veces podemos obtener <span class="decision-highlight">información adicional</span> 
+                            (a través de experimentos, estudios de mercado, etc.) que nos permite actualizar nuestras probabilidades. 
+                            Esto se hace usando el <span class="value-highlight">Teorema de Bayes</span>.
+                        </div>
+                    </div>
+                    <p><strong>Datos iniciales:</strong></p>
+                    ${formatMatrixWithNames()}
+                    <p><strong>Probabilidades a priori:</strong></p>
+                    ${formatProbabilitiesWithNames()}
+                    <p><strong>Probabilidades condicionales (de la experimentación):</strong></p>
+                    ${formatExperimentationProbsWithNames()}`
+                });
+                
+                // Paso 2: Calcular probabilidades conjuntas
+                const jointProbs = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const altProbs = [];
+                    for (let j = 0; j < state.statesCount; j++) {
+                        altProbs.push(state.experimentationProbs[i][j] * state.probabilities[j]);
+                    }
+                    jointProbs.push(altProbs);
+                }
+                
+                steps.push({
+                    title: "Paso 2: Cálculo de probabilidades conjuntas",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Fórmula:</strong><br>
+                            <div class="formula-box">
+                                <div class="formula-title">Probabilidad Conjunta</div>
+                                P(Alternativa i, Estado j) = P(Estado j) × P(Alternativa i | Estado j)
+                            </div>
+                            <br>
+                            Estas probabilidades conjuntas representan la probabilidad de que ocurra un estado específico 
+                            <span class="decision-highlight">y</span> que la alternativa proporcione cierto resultado.
+                        </div>
+                    </div>
+                    ${formatJointProbsWithNames(jointProbs)}`
+                });
+                
+                // Paso 3: Calcular probabilidades marginales de las alternativas
+                const marginalProbs = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    marginalProbs.push(jointProbs[i].reduce((sum, prob) => sum + prob, 0));
+                }
+                
+                steps.push({
+                    title: "Paso 3: Cálculo de probabilidades marginales de las alternativas",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto:</strong> Las probabilidades marginales P(Alternativa i) representan la probabilidad total 
+                            de observar cierto resultado de la experimentación, independientemente del estado que ocurra.<br>
+                            <div class="formula-box">
+                                <div class="formula-title">Probabilidad Marginal</div>
+                                P(Alternativa i) = Σ P(Alternativa i, Estado j)
+                            </div>
+                        </div>
+                    </div>
+                    ${formatMarginalProbsWithNames(marginalProbs)}`
+                });
+                
+                // Paso 4: Calcular probabilidades a posteriori
+                const posteriorProbs = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const altProbs = [];
+                    for (let j = 0; j < state.statesCount; j++) {
+                        altProbs.push(jointProbs[i][j] / marginalProbs[i] || 0);
+                    }
+                    posteriorProbs.push(altProbs);
+                }
+                
+                steps.push({
+                    title: "Paso 4: Cálculo de probabilidades a posteriori (Teorema de Bayes)",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Fórmula de Bayes:</strong><br>
+                            <div class="formula-box">
+                                <div class="formula-title">Teorema de Bayes</div>
+                                P(Estado j | Alternativa i) = P(Alternativa i, Estado j) / P(Alternativa i)
+                            </div>
+                            <br>
+                            Estas son las <span class="probability-highlight">probabilidades actualizadas</span> después de considerar la información adicional.
+                        </div>
+                    </div>
+                    ${formatPosteriorProbsWithNames(posteriorProbs)}`
+                });
+                
+                // Paso 5: Calcular valor esperado con información adicional
+                const expectedValuesWithInfo = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    let ev = 0;
+                    let calculation = "";
+                    for (let j = 0; j < state.statesCount; j++) {
+                        ev += state.matrixValues[i][j] * posteriorProbs[i][j];
+                        if (j > 0) calculation += " + ";
+                        calculation += `${posteriorProbs[i][j].toFixed(4)} × ${state.matrixValues[i][j].toFixed(2)}`;
+                    }
+                    expectedValuesWithInfo.push({
+                        value: ev,
+                        calculation: calculation
+                    });
+                }
+                
+                steps.push({
+                    title: "Paso 5: Cálculo del Valor Esperado con información adicional",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Aplicación:</strong> Ahora calculamos el Valor Esperado usando las <span class="probability-highlight">probabilidades actualizadas</span>.
+                        </div>
+                    </div>
+                    ${calculateExpectedValuesWithInfoAndNames(expectedValuesWithInfo, posteriorProbs)}`
+                });
+                
+                // Paso 6: Calcular el valor esperado de la información muestral
+                const evWithoutInfo = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    let ev = 0;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        ev += state.matrixValues[i][j] * state.probabilities[j];
+                    }
+                    evWithoutInfo.push(ev);
+                }
+                
+                const bestEVWithoutInfo = Math.max(...evWithoutInfo);
+                const evWithInfo = expectedValuesWithInfo.reduce((sum, ev, i) => sum + ev.value * marginalProbs[i], 0);
+                const valueOfInfo = evWithInfo - bestEVWithoutInfo;
+                
+                steps.push({
+                    title: "Paso 6: Cálculo del Valor de la Información Muestral",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto clave:</strong> El <span class="value-highlight">Valor de la Información Muestral (VIM)</span> 
+                            nos dice cuánto vale la pena pagar por la información adicional.<br>
+                            <div class="formula-box">
+                                <div class="formula-title">Valor de la Información Muestral</div>
+                                VIM = VE con información - VE sin información
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Valor</th>
+                                    <th>Fórmula/Cálculo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Mejor VE sin información</td>
+                                    <td class="value-highlight">${bestEVWithoutInfo.toFixed(4)}</td>
+                                    <td>Máximo de [${evWithoutInfo.map(v => v.toFixed(4)).join(', ')}]</td>
+                                </tr>
+                                <tr>
+                                    <td>VE con información</td>
+                                    <td class="value-highlight">${evWithInfo.toFixed(4)}</td>
+                                    <td>Σ [P(Alternativa i) × VE(Alternativa i con info)]</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td><strong>Valor de la Información</strong></td>
+                                    <td class="value-highlight"><strong>${valueOfInfo.toFixed(4)}</strong></td>
+                                    <td>${evWithInfo.toFixed(4)} - ${bestEVWithoutInfo.toFixed(4)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert ${valueOfInfo > 0 ? 'alert-success' : 'alert-warning'} mt-3">
+                        <i class="fas ${valueOfInfo > 0 ? 'fa-thumbs-up' : 'fa-exclamation-triangle'} me-2"></i>
+                        <strong>Interpretación:</strong> ${valueOfInfo > 0 ? 
+                            `La información adicional tiene un valor positivo de ${valueOfInfo.toFixed(4)}. 
+                             Vale la pena pagar hasta esta cantidad por la información.` : 
+                            `La información adicional no agrega valor en este caso (VIM = ${valueOfInfo.toFixed(4)}). 
+                             No vale la pena pagar por ella.`}
+                    </div>`
+                });
+                
+                // Paso 7: Decisión óptima
+                let bestEVWithInfo = expectedValuesWithInfo[0].value;
+                let bestAlternative = 0;
+                
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (expectedValuesWithInfo[i].value > bestEVWithInfo) {
+                        bestEVWithInfo = expectedValuesWithInfo[i].value;
+                        bestAlternative = i;
+                    }
+                }
+                
+                steps.push({
+                    title: "Paso 7: Decisión óptima con información adicional",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Conclusión:</strong> Con la información adicional, actualizamos nuestras probabilidades 
+                            y recalculamos los Valores Esperados para tomar una decisión más informada.
+                        </div>
+                    </div>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Decisión final:</strong> Con la información adicional, la mejor alternativa es 
+                        <span class="decision-highlight">${state.alternativesNames[bestAlternative]}</span> con un Valor Esperado de ${bestEVWithInfo.toFixed(4)}.
+                    </div>`
+                });
+                
+                return {
+                    type: "Riesgo con Experimentación",
+                    steps: steps,
+                    finalDecision: {
+                        alternative: bestAlternative + 1,
+                        alternativeName: state.alternativesNames[bestAlternative],
+                        ev: bestEVWithInfo,
+                        valueOfInfo: valueOfInfo
+                    },
+                    chartData: expectedValuesWithInfo.map(ev => ev.value),
+                    chartLabels: state.alternativesNames.slice(0, state.alternativesCount),
+                    expectedValuesWithInfo: expectedValuesWithInfo,
+                    posteriorProbs: posteriorProbs,
+                    marginalProbs: marginalProbs,
+                    bestAlternative: bestAlternative
+                };
+            }
+
+            // Resolver para incertidumbre
+            function solveUncertainty() {
+                const steps = [];
+                
+                // Paso 1: Presentar el concepto
+                steps.push({
+                    title: "Paso 1: Toma de decisiones bajo incertidumbre",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto clave:</strong> En condiciones de <span class="decision-highlight">incertidumbre</span>, 
+                            no conocemos las probabilidades de los estados de la naturaleza. Por lo tanto, utilizamos diferentes 
+                            <span class="decision-highlight">criterios de decisión</span> basados en nuestra actitud hacia el riesgo.
+                        </div>
+                    </div>
+                    <p><strong>Nuestra matriz de decisión es:</strong></p>
+                    ${formatMatrixWithNames()}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Nota:</strong> Como no tenemos probabilidades, vamos a aplicar varios criterios para ver qué alternativa 
+                        recomendaría cada uno. Esto nos da una perspectiva más completa para tomar nuestra decisión final.
+                    </div>`
+                });
+                
+                const criteriaResults = [];
+                
+                // Criterio Maximax (optimista)
+                steps.push({
+                    title: "Paso 2: Criterio Maximax (Optimista)",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto:</strong> El criterio Maximax asume una actitud optimista. Seleccionamos la alternativa 
+                            que tiene el mejor resultado posible, sin importar qué tan improbable sea.
+                        </div>
+                    </div>
+                    <div class="formula-box">
+                        <div class="formula-title">Fórmula Maximax</div>
+                        Maximax = Máximo de los máximos<br>
+                        Alternativa óptima = argmax_i [ max_j (Recompensa(i,j)) ]
+                    </div>
+                    ${explainMaximaxCriterion()}`
+                });
+                
+                const maximaxValues = state.matrixValues.map(row => Math.max(...row));
+                let maximaxBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (maximaxValues[i] > maximaxValues[maximaxBest]) {
+                        maximaxBest = i;
+                    }
+                }
+                
+                criteriaResults.push({
+                    name: "Maximax (Optimista)",
+                    description: "Selecciona la alternativa con la máxima recompensa posible (actitud optimista)",
+                    bestAlternative: maximaxBest,
+                    bestAlternativeName: state.alternativesNames[maximaxBest],
+                    value: maximaxValues[maximaxBest]
+                });
+                
+                // Criterio Maximin (pesimista)
+                steps.push({
+                    title: "Paso 3: Criterio Maximin (Pesimista)",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto:</strong> El criterio Maximin asume una actitud pesimista o conservadora. 
+                            Seleccionamos la alternativa que maximiza la peor recompensa posible, protegiéndonos contra el peor escenario.
+                        </div>
+                    </div>
+                    <div class="formula-box">
+                        <div class="formula-title">Fórmula Maximin</div>
+                        Maximin = Máximo de los mínimos<br>
+                        Alternativa óptima = argmax_i [ min_j (Recompensa(i,j)) ]
+                    </div>
+                    ${explainMaximinCriterion()}`
+                });
+                
+                const maximinValues = state.matrixValues.map(row => Math.min(...row));
+                let maximinBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (maximinValues[i] > maximinValues[maximinBest]) {
+                        maximinBest = i;
+                    }
+                }
+                
+                criteriaResults.push({
+                    name: "Maximin (Pesimista)",
+                    description: "Selecciona la alternativa con la mejor de las peores recompensas (actitud pesimista o conservadora)",
+                    bestAlternative: maximinBest,
+                    bestAlternativeName: state.alternativesNames[maximinBest],
+                    value: maximinValues[maximinBest]
+                });
+                
+                // Criterio de Laplace (equiprobabilidad)
+                steps.push({
+                    title: "Paso 4: Criterio de Laplace (Equiprobabilidad)",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto:</strong> El criterio de Laplace asume que todos los estados de la naturaleza 
+                            son igualmente probables. Calculamos el valor esperado bajo esta suposición.
+                        </div>
+                    </div>
+                    <div class="formula-box">
+                        <div class="formula-title">Fórmula de Laplace</div>
+                        VE(i) = (1/n) × Σ Recompensa(i,j)<br>
+                        Alternativa óptima = argmax_i [ VE(i) ]
+                    </div>
+                    ${explainLaplaceCriterion()}`
+                });
+                
+                const laplaceValues = state.matrixValues.map(row => 
+                    row.reduce((sum, val) => sum + val, 0) / state.statesCount
+                );
+                let laplaceBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (laplaceValues[i] > laplaceValues[laplaceBest]) {
+                        laplaceBest = i;
+                    }
+                }
+                
+                criteriaResults.push({
+                    name: "Laplace (Equiprobabilidad)",
+                    description: "Asigna igual probabilidad a cada estado y selecciona la alternativa con mayor valor esperado",
+                    bestAlternative: laplaceBest,
+                    bestAlternativeName: state.alternativesNames[laplaceBest],
+                    value: laplaceValues[laplaceBest]
+                });
+                
+                // Criterio de Hurwicz (coeficiente de optimismo)
+                const alpha = 0.7; // Coeficiente de optimismo
+                steps.push({
+                    title: "Paso 5: Criterio de Hurwicz (Coeficiente de Optimismo)",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto:</strong> El criterio de Hurwicz combina los enfoques optimista y pesimista 
+                            mediante un coeficiente de optimismo (α). Cuando α=1, es equivalente a Maximax; cuando α=0, es equivalente a Maximin.
+                        </div>
+                    </div>
+                    <div class="formula-box">
+                        <div class="formula-title">Fórmula de Hurwicz</div>
+                        H(i) = α × max_j(Recompensa(i,j)) + (1-α) × min_j(Recompensa(i,j))<br>
+                        Alternativa óptima = argmax_i [ H(i) ]<br>
+                        (Usamos α = ${alpha})
+                    </div>
+                    ${explainHurwiczCriterion(alpha)}`
+                });
+                
+                const hurwiczValues = state.matrixValues.map(row => 
+                    alpha * Math.max(...row) + (1 - alpha) * Math.min(...row)
+                );
+                let hurwiczBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (hurwiczValues[i] > hurwiczValues[hurwiczBest]) {
+                        hurwiczBest = i;
+                    }
+                }
+                
+                criteriaResults.push({
+                    name: `Hurwicz (α = ${alpha})`,
+                    description: `Combina los enfoques optimista y pesimista con un coeficiente de optimismo α = ${alpha}`,
+                    bestAlternative: hurwiczBest,
+                    bestAlternativeName: state.alternativesNames[hurwiczBest],
+                    value: hurwiczValues[hurwiczBest]
+                });
+                
+                // Criterio de Savage (minimax regret)
+                steps.push({
+                    title: "Paso 6: Criterio de Savage (Minimax Regret)",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Concepto:</strong> El criterio de Savage se basa en el arrepentimiento o pérdida de oportunidad. 
+                            Construimos una matriz de arrepentimiento donde cada elemento representa cuánto nos arrepentimos de no haber 
+                            elegido la mejor alternativa para cada estado.
+                        </div>
+                    </div>
+                    <div class="formula-box">
+                        <div class="formula-title">Fórmula de Savage</div>
+                        Arrepentimiento(i,j) = max_k(Recompensa(k,j)) - Recompensa(i,j)<br>
+                        Máx. Arrepentimiento(i) = max_j [ Arrepentimiento(i,j) ]<br>
+                        Alternativa óptima = argmin_i [ Máx. Arrepentimiento(i) ]
+                    </div>
+                    ${explainSavageCriterion()}`
+                });
+                
+                // Calcular la matriz de arrepentimiento
+                const regretMatrix = [];
+                for (let j = 0; j < state.statesCount; j++) {
+                    const maxInColumn = Math.max(...state.matrixValues.map(row => row[j]));
+                    const columnRegrets = state.matrixValues.map(row => maxInColumn - row[j]);
+                    regretMatrix.push(columnRegrets);
+                }
+                
+                // Transponer la matriz de arrepentimiento
+                const regretMatrixT = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    regretMatrixT.push([]);
+                    for (let j = 0; j < state.statesCount; j++) {
+                        regretMatrixT[i].push(regretMatrix[j][i]);
+                    }
+                }
+                
+                // Encontrar el máximo arrepentimiento por alternativa
+                const maxRegrets = regretMatrixT.map(row => Math.max(...row));
+                let savageBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (maxRegrets[i] < maxRegrets[savageBest]) {
+                        savageBest = i;
+                    }
+                }
+                
+                criteriaResults.push({
+                    name: "Savage (Minimax Regret)",
+                    description: "Minimiza el máximo arrepentimiento (diferencia entre el mejor resultado posible y el obtenido)",
+                    bestAlternative: savageBest,
+                    bestAlternativeName: state.alternativesNames[savageBest],
+                    value: maxRegrets[savageBest]
+                });
+                
+                steps.push({
+                    title: "Paso 7: Comparación de todos los criterios",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Comparación completa:</strong> Ahora comparamos los resultados de todos los criterios para tener una visión integral.
+                        </div>
+                    </div>
+                    ${formatCriteriaComparison(criteriaResults, regretMatrixT)}`
+                });
+                
+                steps.push({
+                    title: "Paso 8: Análisis y recomendación final",
+                    content: `<div class="pedagogical-tip">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <strong>Reflexión final:</strong> En la incertidumbre, no hay una única respuesta "correcta". 
+                            La mejor alternativa depende de tu <span class="decision-highlight">actitud hacia el riesgo</span> 
+                            y de tus <span class="decision-highlight">objetivos personales</span>.
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Recomendación:</strong> Considera cuál criterio se alinea mejor con tu situación:<br>
+                        - Si eres <span class="decision-highlight">optimista</span>: Elige según Maximax<br>
+                        - Si eres <span class="decision-highlight">conservador</span>: Elige según Maximin<br>
+                        - Si quieres un <span class="decision-highlight">equilibrio</span>: Elige según Hurwicz o Laplace<br>
+                        - Si quieres <span class="decision-highlight">minimizar arrepentimientos</span>: Elige según Savage
+                    </div>
+                    ${summarizeCriteriaRecommendations(criteriaResults)}`
+                });
+                
+                return {
+                    type: "Incertidumbre",
+                    steps: steps,
+                    finalDecision: criteriaResults,
+                    chartData: criteriaResults.map(r => r.value),
+                    chartLabels: criteriaResults.map(r => r.name)
+                };
+            }
+
+            // Explicar criterio Maximax
+            function explainMaximaxCriterion() {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th>';
+                for (let j = 0; j < state.statesCount; j++) {
+                    html += `<th>${state.statesNames[j]}</th>`;
+                }
+                html += '<th>Máximo</th><th>¿Óptima?</th></tr></thead><tbody>';
+                
+                const maximaxValues = state.matrixValues.map(row => Math.max(...row));
+                let maximaxBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (maximaxValues[i] > maximaxValues[maximaxBest]) {
+                        maximaxBest = i;
+                    }
+                }
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr ${i === maximaxBest ? 'class="table-success"' : ''}><td class="table-warning fw-bold">${state.alternativesNames[i]}</td>`;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<td class="text-center">${state.matrixValues[i][j].toFixed(2)}</td>`;
+                    }
+                    html += `<td class="value-highlight">${maximaxValues[i].toFixed(2)}</td>`;
+                    html += `<td>${i === maximaxBest ? '<i class="fas fa-check-circle text-success"></i> SÍ' : '<i class="fas fa-times-circle text-danger"></i> NO'}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                html += `<div class="alert alert-success mt-3">
+                    <i class="fas fa-trophy me-2"></i>
+                    <strong>Decisión Maximax:</strong> La alternativa <span class="decision-highlight">${state.alternativesNames[maximaxBest]}</span> 
+                    tiene el mejor resultado posible (${maximaxValues[maximaxBest].toFixed(2)}) y es, por lo tanto, la elección óptima para un tomador de decisiones optimista.
+                </div>`;
+                
+                return html;
+            }
+
+            // Explicar criterio Maximin
+            function explainMaximinCriterion() {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th>';
+                for (let j = 0; j < state.statesCount; j++) {
+                    html += `<th>${state.statesNames[j]}</th>`;
+                }
+                html += '<th>Mínimo</th><th>¿Óptima?</th></tr></thead><tbody>';
+                
+                const maximinValues = state.matrixValues.map(row => Math.min(...row));
+                let maximinBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (maximinValues[i] > maximinValues[maximinBest]) {
+                        maximinBest = i;
+                    }
+                }
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr ${i === maximinBest ? 'class="table-success"' : ''}><td class="table-warning fw-bold">${state.alternativesNames[i]}</td>`;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<td class="text-center">${state.matrixValues[i][j].toFixed(2)}</td>`;
+                    }
+                    html += `<td class="value-highlight">${maximinValues[i].toFixed(2)}</td>`;
+                    html += `<td>${i === maximinBest ? '<i class="fas fa-check-circle text-success"></i> SÍ' : '<i class="fas fa-times-circle text-danger"></i> NO'}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                html += `<div class="alert alert-success mt-3">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <strong>Decisión Maximin:</strong> La alternativa <span class="decision-highlight">${state.alternativesNames[maximinBest]}</span> 
+                    tiene el mejor de los peores resultados (${maximinValues[maximinBest].toFixed(2)}) y es, por lo tanto, la elección óptima para un tomador de decisiones conservador.
+                </div>`;
+                
+                return html;
+            }
+
+            // Explicar criterio de Laplace
+            function explainLaplaceCriterion() {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th>';
+                for (let j = 0; j < state.statesCount; j++) {
+                    html += `<th>${state.statesNames[j]}</th>`;
+                }
+                html += '<th>Valor Esperado (Laplace)</th><th>¿Óptima?</th></tr></thead><tbody>';
+                
+                const laplaceValues = state.matrixValues.map(row => 
+                    row.reduce((sum, val) => sum + val, 0) / state.statesCount
+                );
+                let laplaceBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (laplaceValues[i] > laplaceValues[laplaceBest]) {
+                        laplaceBest = i;
+                    }
+                }
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr ${i === laplaceBest ? 'class="table-success"' : ''}><td class="table-warning fw-bold">${state.alternativesNames[i]}</td>`;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<td class="text-center">${state.matrixValues[i][j].toFixed(2)}</td>`;
+                    }
+                    html += `<td class="value-highlight">${laplaceValues[i].toFixed(4)}</td>`;
+                    html += `<td>${i === laplaceBest ? '<i class="fas fa-check-circle text-success"></i> SÍ' : '<i class="fas fa-times-circle text-danger"></i> NO'}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                html += `<div class="alert alert-success mt-3">
+                    <i class="fas fa-balance-scale me-2"></i>
+                    <strong>Decisión de Laplace:</strong> La alternativa <span class="decision-highlight">${state.alternativesNames[laplaceBest]}</span> 
+                    tiene el mayor valor esperado (${laplaceValues[laplaceBest].toFixed(4)}) asumiendo que todos los estados son igualmente probables.
+                </div>`;
+                
+                return html;
+            }
+
+            // Explicar criterio de Hurwicz
+            function explainHurwiczCriterion(alpha) {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th>';
+                for (let j = 0; j < state.statesCount; j++) {
+                    html += `<th>${state.statesNames[j]}</th>`;
+                }
+                html += '<th>Máximo</th><th>Mínimo</th><th>Hurwicz (α=' + alpha + ')</th><th>¿Óptima?</th></tr></thead><tbody>';
+                
+                const hurwiczValues = state.matrixValues.map(row => 
+                    alpha * Math.max(...row) + (1 - alpha) * Math.min(...row)
+                );
+                let hurwiczBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (hurwiczValues[i] > hurwiczValues[hurwiczBest]) {
+                        hurwiczBest = i;
+                    }
+                }
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const maxVal = Math.max(...state.matrixValues[i]);
+                    const minVal = Math.min(...state.matrixValues[i]);
+                    const hurwiczVal = alpha * maxVal + (1 - alpha) * minVal;
+                    
+                    html += `<tr ${i === hurwiczBest ? 'class="table-success"' : ''}><td class="table-warning fw-bold">${state.alternativesNames[i]}</td>`;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<td class="text-center">${state.matrixValues[i][j].toFixed(2)}</td>`;
+                    }
+                    html += `<td class="value-highlight">${maxVal.toFixed(2)}</td>`;
+                    html += `<td class="value-highlight">${minVal.toFixed(2)}</td>`;
+                    html += `<td class="value-highlight">${hurwiczVal.toFixed(4)}</td>`;
+                    html += `<td>${i === hurwiczBest ? '<i class="fas fa-check-circle text-success"></i> SÍ' : '<i class="fas fa-times-circle text-danger"></i> NO'}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                html += `<div class="alert alert-success mt-3">
+                    <i class="fas fa-sliders-h me-2"></i>
+                    <strong>Decisión de Hurwicz:</strong> La alternativa <span class="decision-highlight">${state.alternativesNames[hurwiczBest]}</span> 
+                    tiene el mejor valor de Hurwicz (${hurwiczValues[hurwiczBest].toFixed(4)}) con α = ${alpha}.
+                </div>`;
+                
+                return html;
+            }
+
+            // Explicar criterio de Savage
+            function explainSavageCriterion() {
+                // Calcular la matriz de arrepentimiento
+                const regretMatrix = [];
+                for (let j = 0; j < state.statesCount; j++) {
+                    const maxInColumn = Math.max(...state.matrixValues.map(row => row[j]));
+                    const columnRegrets = state.matrixValues.map(row => maxInColumn - row[j]);
+                    regretMatrix.push(columnRegrets);
+                }
+                
+                // Transponer la matriz de arrepentimiento
+                const regretMatrixT = [];
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    regretMatrixT.push([]);
+                    for (let j = 0; j < state.statesCount; j++) {
+                        regretMatrixT[i].push(regretMatrix[j][i]);
+                    }
+                }
+                
+                // Encontrar el máximo arrepentimiento por alternativa
+                const maxRegrets = regretMatrixT.map(row => Math.max(...row));
+                let savageBest = 0;
+                for (let i = 1; i < state.alternativesCount; i++) {
+                    if (maxRegrets[i] < maxRegrets[savageBest]) {
+                        savageBest = i;
+                    }
+                }
+                
+                let html = '<div class="mb-4"><h5>Matriz de Arrepentimiento:</h5>';
+                html += '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa / Estado</th>';
+                for (let j = 0; j < state.statesCount; j++) {
+                    html += `<th>${state.statesNames[j]}</th>`;
+                }
+                html += '<th>Máx. Arrepentimiento</th><th>¿Óptima?</th></tr></thead><tbody>';
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr ${i === savageBest ? 'class="table-success"' : ''}><td class="table-warning fw-bold">${state.alternativesNames[i]}</td>`;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<td class="text-center">${regretMatrixT[i][j].toFixed(2)}</td>`;
+                    }
+                    html += `<td class="value-highlight">${maxRegrets[i].toFixed(2)}</td>`;
+                    html += `<td>${i === savageBest ? '<i class="fas fa-check-circle text-success"></i> SÍ' : '<i class="fas fa-times-circle text-danger"></i> NO'}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div></div>';
+                html += `<div class="alert alert-success mt-3">
+                    <i class="fas fa-heart-broken me-2"></i>
+                    <strong>Decisión de Savage:</strong> La alternativa <span class="decision-highlight">${state.alternativesNames[savageBest]}</span> 
+                    tiene el menor arrepentimiento máximo (${maxRegrets[savageBest].toFixed(2)}) y es, por lo tanto, la elección óptima para minimizar el peor arrepentimiento posible.
+                </div>`;
+                
+                return html;
+            }
+
+            // Formatear matriz con nombres
+            function formatMatrixWithNames() {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                
+                // Encabezados
+                html += '<thead class="table-primary"><tr><th>Alternativas / Estados</th>';
+                for (let j = 0; j < state.statesCount; j++) {
+                    html += `<th class="table-info">${state.statesNames[j]}</th>`;
+                }
+                html += '</tr></thead><tbody>';
+                
+                // Filas
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr><td class="table-warning fw-bold">${state.alternativesNames[i]}</td>`;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<td class="text-center value-highlight">${state.matrixValues[i][j].toFixed(2)}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Formatear probabilidades con nombres
+            function formatProbabilitiesWithNames() {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Estado</th><th>Probabilidad</th></tr></thead><tbody>';
+                
+                for (let j = 0; j < state.statesCount; j++) {
+                    html += `<tr><td class="table-info">${state.statesNames[j]}</td><td class="text-center probability-highlight">${state.probabilities[j].toFixed(4)}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Formatear probabilidades de experimentación con nombres
+            function formatExperimentationProbsWithNames() {
+                let html = '';
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<div class="card mb-3"><div class="card-header bg-info text-white"><strong>Dado: ${state.alternativesNames[i]}</strong></div><div class="card-body">`;
+                    html += '<table class="table table-bordered table-hover"><thead class="table-primary"><tr><th>Estado</th><th>P(Estado | Alternativa)</th></tr></thead><tbody>';
+                    
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<tr><td class="table-info">${state.statesNames[j]}</td><td class="text-center probability-highlight">${state.experimentationProbs[i][j].toFixed(4)}</td></tr>`;
+                    }
+                    
+                    html += '</tbody></table></div></div>';
+                }
+                return html;
+            }
+
+            // Analizar por estado para certidumbre
+            function analyzeByState() {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Estado</th><th>Mejor Alternativa</th><th>Valor Máximo</th></tr></thead><tbody>';
+                
+                for (let j = 0; j < state.statesCount; j++) {
+                    let bestValue = state.matrixValues[0][j];
+                    let bestAlternative = 0;
+                    
+                    for (let i = 1; i < state.alternativesCount; i++) {
+                        if (state.matrixValues[i][j] > bestValue) {
+                            bestValue = state.matrixValues[i][j];
+                            bestAlternative = i;
+                        }
+                    }
+                    
+                    html += `<tr class="table-success"><td class="table-info fw-bold">${state.statesNames[j]}</td><td class="decision-highlight">${state.alternativesNames[bestAlternative]}</td><td class="value-highlight">${bestValue.toFixed(2)}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Resumen por estado para certidumbre
+            function summaryByState() {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Si ocurre este estado...</th><th>Entonces elige esta alternativa</th><th>Para obtener este valor</th></tr></thead><tbody>';
+                
+                for (let j = 0; j < state.statesCount; j++) {
+                    let bestValue = state.matrixValues[0][j];
+                    let bestAlternative = 0;
+                    
+                    for (let i = 1; i < state.alternativesCount; i++) {
+                        if (state.matrixValues[i][j] > bestValue) {
+                            bestValue = state.matrixValues[i][j];
+                            bestAlternative = i;
+                        }
+                    }
+                    
+                    html += `<tr><td class="table-info">${state.statesNames[j]}</td><td class="decision-highlight">${state.alternativesNames[bestAlternative]}</td><td class="value-highlight">${bestValue.toFixed(2)}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Calcular valores esperados con explicación
+            function calculateExpectedValuesWithExplanation(expectedValues) {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th><th>Cálculo del Valor Esperado</th><th>Resultado</th></tr></thead><tbody>';
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr><td class="table-warning fw-bold">${state.alternativesNames[i]}</td><td>${expectedValues[i].calculation}</td><td class="value-highlight">${expectedValues[i].value.toFixed(4)}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Calcular VE y desviación estándar
+            function calculateEVAndStd(expectedValues, stdDeviations) {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th><th>Valor Esperado</th><th>Desviación Estándar</th></tr></thead><tbody>';
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr><td class="table-warning fw-bold">${state.alternativesNames[i]}</td><td class="value-highlight">${expectedValues[i].toFixed(4)}</td><td class="value-highlight">${stdDeviations[i].toFixed(4)}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Calcular coeficiente de variación
+            function calculateCoefficientOfVariation(expectedValues, stdDeviations, coefficients) {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th><th>Valor Esperado</th><th>Desviación Estándar</th><th>Coeficiente de Variación (CV)</th><th>Interpretación</th></tr></thead><tbody>';
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const cv = coefficients[i];
+                    let interpretation = "";
+                    if (cv < 0.5) {
+                        interpretation = '<span class="text-success">Bajo riesgo relativo</span>';
+                    } else if (cv < 1) {
+                        interpretation = '<span class="text-warning">Riesgo moderado</span>';
+                    } else {
+                        interpretation = '<span class="text-danger">Alto riesgo relativo</span>';
+                    }
+                    
+                    html += `<tr><td class="table-warning fw-bold">${state.alternativesNames[i]}</td><td class="value-highlight">${expectedValues[i].toFixed(4)}</td><td class="value-highlight">${stdDeviations[i].toFixed(4)}</td><td class="value-highlight">${cv.toFixed(4)}</td><td>${interpretation}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Calcular valores esperados con información y nombres
+            function calculateExpectedValuesWithInfoAndNames(expectedValues, posteriorProbs) {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th><th>Cálculo del VE con info</th><th>Resultado</th></tr></thead><tbody>';
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr><td class="table-warning fw-bold">${state.alternativesNames[i]}</td><td>${expectedValues[i].calculation}</td><td class="value-highlight">${expectedValues[i].value.toFixed(4)}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Formatear probabilidades conjuntas con nombres
+            function formatJointProbsWithNames(jointProbs) {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa / Estado</th>';
+                for (let j = 0; j < state.statesCount; j++) {
+                    html += `<th class="table-info">${state.statesNames[j]}</th>`;
+                }
+                html += '</tr></thead><tbody>';
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr><td class="table-warning fw-bold">${state.alternativesNames[i]}</td>`;
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<td class="text-center probability-highlight">${jointProbs[i][j].toFixed(4)}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Formatear probabilidades marginales con nombres
+            function formatMarginalProbsWithNames(marginalProbs) {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Alternativa</th><th>Probabilidad Marginal P(Alternativa)</th></tr></thead><tbody>';
+                
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<tr><td class="table-warning fw-bold">${state.alternativesNames[i]}</td><td class="text-center probability-highlight">${marginalProbs[i].toFixed(4)}</td></tr>`;
+                }
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Formatear probabilidades a posteriori con nombres
+            function formatPosteriorProbsWithNames(posteriorProbs) {
+                let html = '';
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    html += `<div class="card mb-3"><div class="card-header bg-success text-white"><strong>Probabilidades actualizadas dado: ${state.alternativesNames[i]}</strong></div><div class="card-body">`;
+                    html += '<table class="table table-bordered table-hover"><thead class="table-primary"><tr><th>Estado</th><th>P(Estado | Alternativa)</th></tr></thead><tbody>';
+                    
+                    for (let j = 0; j < state.statesCount; j++) {
+                        html += `<tr><td class="table-info">${state.statesNames[j]}</td><td class="text-center probability-highlight">${posteriorProbs[i][j].toFixed(4)}</td></tr>`;
+                    }
+                    
+                    html += '</tbody></table></div></div>';
+                }
+                return html;
+            }
+
+            // Formatear comparación de criterios
+            function formatCriteriaComparison(criteria, regretMatrix) {
+                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-primary"><tr><th>Criterio</th><th>Descripción</th><th>Mejor Alternativa</th><th>Valor</th></tr></thead><tbody>';
+                
+                criteria.forEach(criterion => {
+                    html += `<tr class="table-success"><td class="fw-bold">${criterion.name}</td><td>${criterion.description}</td><td class="decision-highlight">${criterion.bestAlternativeName}</td><td class="value-highlight">${criterion.value.toFixed(4)}</td></tr>`;
+                });
+                
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            // Resumir recomendaciones de criterios
+            function summarizeCriteriaRecommendations(criteria) {
+                // Contar cuántas veces se recomienda cada alternativa
+                const recommendationCount = {};
+                const alternativesRecommended = {};
+                
+                criteria.forEach(criterion => {
+                    const altName = criterion.bestAlternativeName;
+                    if (!recommendationCount[altName]) {
+                        recommendationCount[altName] = 0;
+                        alternativesRecommended[altName] = [];
+                    }
+                    recommendationCount[altName]++;
+                    alternativesRecommended[altName].push(criterion.name);
+                });
+                
+                // Encontrar la alternativa más recomendada
+                let mostRecommended = null;
+                let maxCount = 0;
+                
+                for (const alt in recommendationCount) {
+                    if (recommendationCount[alt] > maxCount) {
+                        maxCount = recommendationCount[alt];
+                        mostRecommended = alt;
+                    }
+                }
+                
+                let html = '<div class="alert alert-success">';
+                html += '<h5>Resumen de recomendaciones:</h5>';
+                html += '<ul>';
+                
+                for (const alt in recommendationCount) {
+                    html += `<li>La alternativa <span class="decision-highlight">${alt}</span> es recomendada por ${recommendationCount[alt]} criterio(s): ${alternativesRecommended[alt].join(', ')}</li>`;
+                }
+                
+                html += '</ul>';
+                
+                if (maxCount > 1) {
+                    html += `<p class="mt-3"><strong>Alternativa más recomendada:</strong> <span class="decision-highlight">${mostRecommended}</span> (recomendada por ${maxCount} criterios)</p>`;
+                }
+                
+                html += '</div>';
+                return html;
+            }
+
+            // Mostrar resultados con explicación pedagógica
+            function displayPedagogicalResults(results) {
+                const resultsContainer = document.getElementById('results-container');
+                
+                // Título
+                const title = document.createElement('h3');
+                title.innerHTML = `<i class="fas fa-clipboard-check me-2"></i>Resultados para: <span class="decision-highlight">${results.type}</span>`;
+                resultsContainer.appendChild(title);
+                
+                // Pasos con numeración
+                results.steps.forEach((step, index) => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'step animate-fade-in';
+                    
+                    const stepNumber = document.createElement('div');
+                    stepNumber.className = 'step-number';
+                    stepNumber.textContent = index + 1;
+                    stepDiv.appendChild(stepNumber);
+                    
+                    const stepTitle = document.createElement('div');
+                    stepTitle.className = 'step-title';
+                    stepTitle.innerHTML = `<i class="fas fa-step-forward me-2"></i>${step.title}`;
+                    stepDiv.appendChild(stepTitle);
+                    
+                    const stepContent = document.createElement('div');
+                    stepContent.innerHTML = step.content;
+                    stepDiv.appendChild(stepContent);
+                    
+                    resultsContainer.appendChild(stepDiv);
+                });
+            }
+
+            // Generar gráfico
+            function generateChart(results) {
+                const ctx = document.getElementById('results-chart').getContext('2d');
+                
+                // Destruir gráfico anterior si existe
+                if (state.chart) {
+                    state.chart.destroy();
+                }
+                
+                // Definir colores según el tipo de decisión
+                let backgroundColors = [];
+                let borderColors = [];
+                
+                if (results.type === "Incertidumbre") {
+                    // Colores diferentes para cada criterio
+                    const colors = [
+                        'rgba(59, 130, 246, 0.7)',  // primary
+                        'rgba(16, 185, 129, 0.7)',  // secondary
+                        'rgba(245, 158, 11, 0.7)',  // accent
+                        'rgba(239, 68, 68, 0.7)',   // danger
+                        'rgba(139, 92, 246, 0.7)'   // purple
+                    ];
+                    
+                    backgroundColors = colors.slice(0, results.chartData.length);
+                    borderColors = colors.slice(0, results.chartData.length).map(color => color.replace('0.7', '1'));
+                } else {
+                    // Color uniforme para otros tipos
+                    backgroundColors = Array(results.chartData.length).fill('rgba(59, 130, 246, 0.7)');
+                    borderColors = Array(results.chartData.length).fill('rgba(59, 130, 246, 1)');
+                }
+                
+                state.chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: results.chartLabels,
+                        datasets: [{
+                            label: getChartLabel(results.type),
+                            data: results.chartData,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 2,
+                            borderRadius: 5,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Valor',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Comparación de Resultados - ${results.type}`,
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                },
+                                padding: {
+                                    top: 10,
+                                    bottom: 20
+                                }
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw.toFixed(4)}`;
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutQuart'
+                        }
+                    }
+                });
+            }
+
+            // Obtener etiqueta para el gráfico según el tipo
+            function getChartLabel(type) {
+                switch(type) {
+                    case "Certidumbre":
+                        return "Mejor Valor por Estado";
+                    case "Riesgo (VE)":
+                    case "Riesgo sin Experimentación":
+                    case "Riesgo con Experimentación":
+                        return "Valor Esperado";
+                    case "Incertidumbre":
+                        return "Valor por Criterio";
+                    default:
+                        return "Valor";
+                }
+            }
+
+            // Generar árbol de decisión
+            function generateDecisionTree(results) {
+                const treeContainer = document.getElementById('decision-tree');
+                treeContainer.innerHTML = '';
+                
+                if (state.currentDecisionType === 'riesgo-ve' || state.currentDecisionType === 'riesgo-sin-exp') {
+                    // Árbol de decisión para riesgo sin experimentación
+                    generateRiskDecisionTree(results);
+                } else if (state.currentDecisionType === 'riesgo-con-exp') {
+                    // Árbol de decisión para riesgo con experimentación
+                    generateRiskWithExpDecisionTree(results);
+                }
+            }
+
+            // Generar árbol de decisión para riesgo sin experimentación
+            function generateRiskDecisionTree(results) {
+                const treeContainer = document.getElementById('decision-tree');
+                treeContainer.innerHTML = '';
+                
+                // Nodo de decisión inicial
+                const decisionRow = document.createElement('div');
+                decisionRow.className = 'tree-row';
+                
+                const decisionNode = document.createElement('div');
+                decisionNode.className = 'node decision-node';
+                decisionNode.innerHTML = '<i class="fas fa-sitemap"></i><br>Decisión';
+                decisionRow.appendChild(decisionNode);
+                
+                treeContainer.appendChild(decisionRow);
+                
+                // Alternativas
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const altRow = document.createElement('div');
+                    altRow.className = 'tree-row';
+                    
+                    // Flecha desde nodo de decisión
+                    const arrow1 = document.createElement('div');
+                    arrow1.className = 'arrow';
+                    arrow1.innerHTML = '→';
+                    altRow.appendChild(arrow1);
+                    
+                    // Nodo de alternativa
+                    const altNode = document.createElement('div');
+                    altNode.className = 'node decision-node';
+                    altNode.textContent = state.alternativesNames[i];
+                    altRow.appendChild(altNode);
+                    
+                    // Flecha a nodo de probabilidad
+                    const arrow2 = document.createElement('div');
+                    arrow2.className = 'arrow';
+                    arrow2.innerHTML = '→';
+                    altRow.appendChild(arrow2);
+                    
+                    // Nodo de probabilidad
+                    const chanceNode = document.createElement('div');
+                    chanceNode.className = 'node chance-node';
+                    chanceNode.innerHTML = '<i class="fas fa-dice"></i><br>Estado';
+                    altRow.appendChild(chanceNode);
+                    
+                    treeContainer.appendChild(altRow);
+                    
+                    // Estados para esta alternativa
+                    const statesRow = document.createElement('div');
+                    statesRow.className = 'tree-row';
+                    
+                    // Espacio para alinear
+                    const spacer = document.createElement('div');
+                    spacer.style.width = '200px';
+                    statesRow.appendChild(spacer);
+                    
+                    for (let j = 0; j < state.statesCount; j++) {
+                        // Flecha desde nodo de probabilidad
+                        const arrow3 = document.createElement('div');
+                        arrow3.className = 'arrow';
+                        arrow3.innerHTML = '→';
+                        statesRow.appendChild(arrow3);
+                        
+                        // Nodo de estado
+                        const stateNode = document.createElement('div');
+                        stateNode.className = 'node end-node';
+                        stateNode.innerHTML = `${state.statesNames[j]}<br>P=${state.probabilities[j].toFixed(2)}<br>V=${state.matrixValues[i][j].toFixed(2)}`;
+                        statesRow.appendChild(stateNode);
+                    }
+                    
+                    treeContainer.appendChild(statesRow);
+                    
+                    // Línea de resultado esperado
+                    const evRow = document.createElement('div');
+                    evRow.className = 'tree-row';
+                    
+                    // Espacio para alinear
+                    const spacer2 = document.createElement('div');
+                    spacer2.style.width = '300px';
+                    evRow.appendChild(spacer2);
+                    
+                    // Nodo de resultado esperado
+                    const evNode = document.createElement('div');
+                    evNode.className = 'node end-node';
+                    evNode.style.backgroundColor = i === results.bestAlternative ? '#c8e6c9' : '#e8f5e8';
+                    evNode.style.borderColor = i === results.bestAlternative ? '#388e3c' : '#43a047';
+                    evNode.innerHTML = `VE = ${results.expectedValues[i].toFixed(4)}`;
+                    if (i === results.bestAlternative) {
+                        evNode.innerHTML += '<br><strong>¡ÓPTIMA!</strong>';
+                    }
+                    evRow.appendChild(evNode);
+                    
+                    treeContainer.appendChild(evRow);
+                }
+            }
+
+            // Generar árbol de decisión para riesgo con experimentación
+            function generateRiskWithExpDecisionTree(results) {
+                const treeContainer = document.getElementById('decision-tree');
+                treeContainer.innerHTML = '';
+                
+                // Nodo de decisión inicial
+                const decisionRow = document.createElement('div');
+                decisionRow.className = 'tree-row';
+                
+                const decisionNode = document.createElement('div');
+                decisionNode.className = 'node decision-node';
+                decisionNode.innerHTML = '<i class="fas fa-sitemap"></i><br>Decisión';
+                decisionRow.appendChild(decisionNode);
+                
+                treeContainer.appendChild(decisionRow);
+                
+                // Alternativas
+                for (let i = 0; i < state.alternativesCount; i++) {
+                    const altRow = document.createElement('div');
+                    altRow.className = 'tree-row';
+                    
+                    // Flecha desde nodo de decisión
+                    const arrow1 = document.createElement('div');
+                    arrow1.className = 'arrow';
+                    arrow1.innerHTML = '→';
+                    altRow.appendChild(arrow1);
+                    
+                    // Nodo de alternativa
+                    const altNode = document.createElement('div');
+                    altNode.className = 'node decision-node';
+                    altNode.textContent = state.alternativesNames[i];
+                    altRow.appendChild(altNode);
+                    
+                    // Flecha a nodo de probabilidad
+                    const arrow2 = document.createElement('div');
+                    arrow2.className = 'arrow';
+                    arrow2.innerHTML = '→';
+                    altRow.appendChild(arrow2);
+                    
+                    // Nodo de probabilidad (experimentación)
+                    const expNode = document.createElement('div');
+                    expNode.className = 'node chance-node';
+                    expNode.innerHTML = '<i class="fas fa-flask"></i><br>Exp.';
+                    altRow.appendChild(expNode);
+                    
+                    treeContainer.appendChild(altRow);
+                    
+                    // Probabilidades marginales
+                    const marginalRow = document.createElement('div');
+                    marginalRow.className = 'tree-row';
+                    
+                    // Espacio para alinear
+                    const spacer = document.createElement('div');
+                    spacer.style.width = '200px';
+                    marginalRow.appendChild(spacer);
+                    
+                    // Flecha desde nodo de experimentación
+                    const arrow3 = document.createElement('div');
+                    arrow3.className = 'arrow';
+                    arrow3.innerHTML = '→';
+                    marginalRow.appendChild(arrow3);
+                    
+                    // Nodo de probabilidad marginal
+                    const marginalNode = document.createElement('div');
+                    marginalNode.className = 'node chance-node';
+                    marginalNode.innerHTML = `P=${results.marginalProbs[i].toFixed(4)}`;
+                    marginalRow.appendChild(marginalNode);
+                    
+                    treeContainer.appendChild(marginalRow);
+                    
+                    // Estados con probabilidades a posteriori
+                    const statesRow = document.createElement('div');
+                    statesRow.className = 'tree-row';
+                    
+                    // Espacio para alinear
+                    const spacer2 = document.createElement('div');
+                    spacer2.style.width = '300px';
+                    statesRow.appendChild(spacer2);
+                    
+                    for (let j = 0; j < state.statesCount; j++) {
+                        // Flecha desde nodo de probabilidad marginal
+                        const arrow4 = document.createElement('div');
+                        arrow4.className = 'arrow';
+                        arrow4.innerHTML = '→';
+                        statesRow.appendChild(arrow4);
+                        
+                        // Nodo de estado con probabilidad a posteriori
+                        const stateNode = document.createElement('div');
+                        stateNode.className = 'node end-node';
+                        stateNode.innerHTML = `${state.statesNames[j]}<br>P=${results.posteriorProbs[i][j].toFixed(4)}<br>V=${state.matrixValues[i][j].toFixed(2)}`;
+                        statesRow.appendChild(stateNode);
+                    }
+                    
+                    treeContainer.appendChild(statesRow);
+                    
+                    // Línea de resultado esperado con información
+                    const evRow = document.createElement('div');
+                    evRow.className = 'tree-row';
+                    
+                    // Espacio para alinear
+                    const spacer3 = document.createElement('div');
+                    spacer3.style.width = '400px';
+                    evRow.appendChild(spacer3);
+                    
+                    // Nodo de resultado esperado
+                    const evNode = document.createElement('div');
+                    evNode.className = 'node end-node';
+                    evNode.style.backgroundColor = i === results.bestAlternative ? '#c8e6c9' : '#e8f5e8';
+                    evNode.style.borderColor = i === results.bestAlternative ? '#388e3c' : '#43a047';
+                    evNode.innerHTML = `VE = ${results.expectedValuesWithInfo[i].value.toFixed(4)}`;
+                    if (i === results.bestAlternative) {
+                        evNode.innerHTML += '<br><strong>¡ÓPTIMA!</strong>';
+                    }
+                    evRow.appendChild(evNode);
+                    
+                    treeContainer.appendChild(evRow);
+                }
+                
+                // Valor de la información muestral
+                const vimRow = document.createElement('div');
+                vimRow.className = 'tree-row';
+                vimRow.style.marginTop = '30px';
+                
+                const vimNode = document.createElement('div');
+                vimNode.className = 'node decision-node';
+                vimNode.style.backgroundColor = results.finalDecision.valueOfInfo > 0 ? '#c8e6c9' : '#ffccbc';
+                vimNode.style.borderColor = results.finalDecision.valueOfInfo > 0 ? '#388e3c' : '#e64a19';
+                vimNode.innerHTML = `<strong>Valor de la Información</strong><br>VIM = ${results.finalDecision.valueOfInfo.toFixed(4)}`;
+                vimRow.appendChild(vimNode);
+                
+                treeContainer.appendChild(vimRow);
+            }
+
+            // Inicializar la aplicación
+            const initApp = () => {
+                setupDecisionTypeSelection();
+                setupConfigButton();
+                setupMatrixButton();
+                setupCalculateButton();
+                setupResetButton();
+                setupNewAnalysisButton();
+            };
+
+            // Iniciar la aplicación cuando el DOM esté listo
+            initApp();
+        });
+    </script>
+</body>
+</html>
